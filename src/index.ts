@@ -1,53 +1,24 @@
 import { GraphQLServer } from 'graphql-yoga'
-import { importSchema } from 'graphql-import'
-import { Prisma } from './generated/prisma'
-import { Context } from './utils'
+import resolvers from './resolvers'
 
-const resolvers = {
-  Query: {
-    feed(parent, args, context: Context, info) {
-      return context.db.query.posts({ where: { isPublished: true } }, info)
-    },
-    drafts(parent, args, context: Context, info) {
-      return context.db.query.posts({ where: { isPublished: false } }, info)
-    },
-    post(parent, { id }, context: Context, info) {
-      return context.db.query.post({ where: { id: id } }, info)
-    },
-  },
-  Mutation: {
-    createDraft(parent, { title, text }, context: Context, info) {
-      return context.db.mutation.createPost(
-        { data: { title, text } },
-        info,
-      )
-    },
-    deletePost(parent, { id }, context: Context, info) {
-      return context.db.mutation.deletePost({ where: { id } }, info)
-    },
-    publish(parent, { id }, context: Context, info) {
-      return context.db.mutation.updatePost(
-        {
-          where: { id },
-          data: { isPublished: true },
-        },
-        info,
-      )
-    },
-  },
-}
+// If production is explicitly specified via flag..
+if (process.argv[2] === '--production') process.env.NODE_ENV = 'production'
+// Check for development environment.
+const dev = process.env.NODE_ENV !== 'production'
+const port = parseInt(process.env.PORT, 10) || 3000 // If port variable has been set.
 
+// Initialize server..
 const server = new GraphQLServer({
   typeDefs: './src/schema.graphql',
-  resolvers,
-  context: req => ({
-    ...req,
-    db: new Prisma({
-      endpoint: '__PRISMA_ENDPOINT__', // the endpoint of the Prisma DB service
-      secret: 'mysecret123', // specified in database/prisma.yml
-      debug: true, // log all GraphQL queries & mutations
-    }),
-  }),
+  resolvers
 })
 
-server.start(() => console.log('Server is running on http://localhost:4000'))
+// Listen to requests on specified port.
+server.start({
+  port,
+  endpoint: '/graphql',
+  playground: dev ? '/playground' : false,
+  subscriptions: '/subscriptions'
+}, () => {
+  console.log(`> Ready on http://localhost:${port}`)
+})
