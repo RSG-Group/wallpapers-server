@@ -9,5 +9,9 @@
     "lib": [
       "esnext", "dom"
     ]
-  }
+  },
+  "includes": [
+    "index.d.ts",
+    "src/**/*.ts"
+  ]
 }

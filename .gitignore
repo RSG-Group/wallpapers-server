@@ -1,6 +1,7 @@
 .idea
 package-lock.json
 dist
+settings.json5
 
 # Logs
 logs
