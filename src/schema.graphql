@@ -1,5 +1,8 @@
 type Query {
   getUpvotes(imageId: String!): Int!
-  upvoteAndQuery(imageId: String!, deviceId: String!): Int!
-  downvoteAndQuery(imageId: String!, deviceId: String!): Int!
+}
+
+type Mutation {
+  upvote(imageId: String!, deviceId: String!): Int!
+  downvoteIfVoted(imageId: String!, deviceId: String!): Int!
 }
